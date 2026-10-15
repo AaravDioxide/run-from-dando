@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>RUN FROM DANDO // DEVELOPER ALPHA BUILD 1</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Top-Down Arena Canvas -->
+  <canvas id="game-canvas" aria-label="Run From Dando Game Arena"></canvas>
+
+  <!-- ================= MAIN MENU SCREEN (NEO-BRUTALIST DECK) ================= -->
+  <section id="screen-menu" class="screen-layer">
+    <div class="menu-container">
+      <header class="menu-header">
+        <div class="brand-cluster">
+          <h1 class="brand-title">RUN FROM DANDO</h1>
+          <span class="build-tag">DEVELOPER ALPHA BUILD 1</span>
+          <a href="https://dando.in" target="_blank" rel="noopener noreferrer" class="dando-domain-link">DANDO.IN ↗</a>
+        </div>
+        <div class="menu-top-bar">
+          <div class="currency-pill" title="Saved locally in Cookies &amp; LocalStorage">
+            CRED // <span id="menu-currency-val">200</span>
+          </div>
+          <button type="button" id="btn-open-shop" class="nav-btn">ARMORY &amp; SHOP</button>
+          <button type="button" id="btn-open-stats" class="nav-btn">RECORDS</button>
+          <button type="button" id="btn-open-settings" class="nav-btn">CONFIG</button>
+          <button type="button" id="btn-open-tutorial" class="nav-btn">BRIEFING</button>
+          <button type="button" id="btn-open-credits" class="nav-btn">INFO</button>
+        </div>
+      </header>
+
+      <!-- Launch Deck + Seed Selector -->
+      <div class="hero-launch-bar">
+        <div class="hero-copy">
+          <h2>TACTICAL EVASION SIMULATION</h2>
+          <p>Evade Dando &amp; Sector Checkers across 5 progressive Heat waves. Every run seed generates a deterministic layout.</p>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <label for="input-run-seed" style="font-size:0.7rem;font-weight:800;color:var(--accent-acid);">SEED //</label>
+            <input type="text" id="input-run-seed" value="" maxlength="14" aria-label="Arena Seed" style="background:#000;color:var(--accent-acid);border:1.5px solid var(--border-dim);padding:4px 8px;font-size:0.75rem;font-weight:800;width:118px;text-transform:uppercase;" />
+            <button type="button" id="btn-lock-seed" class="nav-btn" style="padding:4px 9px;font-size:0.68rem;">🔓 AUTO</button>
+            <button type="button" id="btn-random-seed" class="nav-btn" style="padding:4px 9px;font-size:0.68rem;">NEW SEED ↻</button>
+          </div>
+        </div>
+        <button type="button" id="btn-play-run" class="play-cta-btn">DEPLOY RUN ▶</button>
+      </div>
+
+      <!-- Row 1: Sector Map & Game Mode -->
+      <div class="menu-grid-layout">
+        <div class="panel-section">
+          <div class="section-heading">01 // SECTOR MAP</div>
+          <div id="selector-maps" class="cards-grid-3"></div>
+          <div id="map-spec-readout" class="spec-readout"></div>
+        </div>
+
+        <div class="panel-section">
+          <div class="section-heading">02 // OPERATION MODE</div>
+          <div id="selector-modes" class="cards-grid-2"></div>
+          <div id="mode-spec-readout" class="spec-readout"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Archetype & Threat Tier + Directives -->
+      <div class="menu-grid-layout">
+        <div class="panel-section">
+          <div class="section-heading">03 // RUNNER ARCHETYPE</div>
+          <div id="selector-characters" class="cards-grid-2"></div>
+          <div id="char-spec-readout" class="spec-readout"></div>
+        </div>
+
+        <div class="panel-section">
+          <div class="section-heading">04 // THREAT TIER</div>
+          <div id="selector-difficulties" class="pills-row"></div>
+          <div id="difficulty-desc-text" class="spec-readout"></div>
+
+          <div id="daily-directives-summary" class="section-heading" style="margin-top:6px;">05 // DAILY DIRECTIVES</div>
+          <div id="daily-challenges-list" class="dc-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= IN-GAME HUD SCREEN ================= -->
+  <section id="screen-hud" class="screen-layer hidden">
+    <div class="hud-top-bar">
+      <!-- Left: Timer, Score, Integrity, Seed -->
+      <div class="hud-cluster">
+        <div class="hud-metrics-row">
+          <div>
+            <div class="hud-metric-label">SURVIVAL</div>
+            <div id="hud-time-val" class="hud-metric-val">00:00</div>
+          </div>
+          <div>
+            <div class="hud-metric-label">SCORE</div>
+            <div id="hud-score-val" class="hud-metric-val">0</div>
+          </div>
+        </div>
+        <div id="hud-health-hearts" class="hearts-row" aria-label="Player Integrity"></div>
+        <div id="hud-seed-val" style="font-size:0.6rem;color:var(--ink-muted);letter-spacing:0.06em;">SEED // ----</div>
+      </div>
+
+      <!-- Center: Dando Proximity, Progressive Heat Bar & Mode Objective -->
+      <div class="hud-center-column">
+        <div class="pressure-box">
+          <div class="pressure-header">
+            <span>DANDO PROXIMITY</span>
+            <span id="hud-pressure-text">CLEAR</span>
+          </div>
+          <div class="bar-track">
+            <div id="hud-pressure-fill" class="bar-fill"></div>
+          </div>
+          <div class="pressure-header" style="margin-top:6px;">
+            <span id="hud-heat-text">HEAT 01 // RECON</span>
+            <span>ESCALATION</span>
+          </div>
+          <div class="bar-track">
+            <div id="hud-heat-fill" class="bar-fill" style="background:#ff3300;width:0%;"></div>
+          </div>
+        </div>
+        <div id="hud-objective-text" class="objective-banner">SURVIVE AS LONG AS POSSIBLE</div>
+        <div id="hud-countdown-banner" class="countdown-banner hidden">DEPLOYING IN 3...</div>
+      </div>
+
+      <!-- Right: Pause Trigger -->
+      <div style="pointer-events:auto;">
+        <button type="button" id="btn-hud-pause" class="nav-btn" style="padding:9px 14px;">PAUSE [ESC]</button>
+      </div>
+    </div>
+
+    <div class="hud-bottom-bar">
+      <!-- Bottom Left: Stamina, Dodge, Skill Cooldowns -->
+      <div class="ability-bars-box">
+        <div class="meter-row">
+          <span id="hud-stamina-label">STAMINA [L-SHIFT]</span>
+          <div class="bar-track" title="Requires 15% minimum stamina to engage sprint">
+            <div class="stamina-threshold-tick"></div>
+            <div id="hud-stamina-fill" class="bar-fill" style="background:#e5ff00;"></div>
+          </div>
+        </div>
+        <div class="meter-row">
+          <span id="hud-dodge-label">DODGE [SPACE] READY</span>
+          <div class="bar-track"><div id="hud-dodge-fill" class="bar-fill" style="background:#00ff88;"></div></div>
+        </div>
+        <div class="meter-row">
+          <span id="hud-ability-label">SKILL [E] READY</span>
+          <div class="bar-track"><div id="hud-ability-fill" class="bar-fill" style="background:#00e5ff;"></div></div>
+        </div>
+      </div>
+
+      <!-- Bottom Right: Active Power-Ups -->
+      <div id="hud-active-powerups" class="active-powerups-row"></div>
+    </div>
+
+    <!-- Mobile Multitouch Controls with Cooldown Progress Fills -->
+    <div class="mobile-touch-layer">
+      <div id="touch-joystick-zone" class="joystick-zone" aria-label="Virtual Movement Joystick">
+        <div id="touch-joystick-knob" class="joystick-knob"></div>
+      </div>
+      <div class="touch-actions-cluster">
+        <button type="button" id="btn-touch-sprint" class="touch-btn" aria-pressed="false">
+          <div id="touch-sprint-fill" class="touch-btn-fill"></div>
+          <span id="touch-sprint-text">SPRINT</span>
+        </button>
+        <button type="button" id="btn-touch-ability" class="touch-btn">
+          <div id="touch-ability-fill" class="touch-btn-fill"></div>
+          <span id="touch-ability-text">SKILL</span>
+        </button>
+        <button type="button" id="btn-touch-dodge" class="touch-btn dodge">
+          <div id="touch-dodge-fill" class="touch-btn-fill"></div>
+          <span id="touch-dodge-text">DODGE</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PAUSE OVERLAY SCREEN ================= -->
+  <section id="screen-pause" class="screen-layer center-overlay hidden">
+    <div class="dialog-box">
+      <h2 class="results-header">SIMULATION PAUSED</h2>
+      <button type="button" id="btn-pause-resume" class="play-cta-btn" style="width:100%;">RESUME RUN ▶</button>
+      <button type="button" id="btn-pause-restart" class="nav-btn" style="padding:11px;">RESTART SECTOR (SAME SEED)</button>
+      <button type="button" id="btn-pause-tutorial" class="nav-btn" style="padding:11px;">TACTICAL BRIEFING</button>
+      <button type="button" id="btn-pause-settings" class="nav-btn" style="padding:11px;">AUDIO &amp; KEYBINDS</button>
+      <button type="button" id="btn-pause-menu" class="nav-btn" style="padding:11px;border-color:var(--accent-signal);color:var(--accent-signal);">ABORT TO MAIN DECK</button>
+      <div id="pause-abort-confirm" class="hidden" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--bg-cell);border:1.5px solid var(--accent-signal);">
+        <span style="font-size:0.74rem;color:var(--ink-light);">CONFIRM ABORT RUN?</span>
+        <div style="display:flex;gap:6px;">
+          <button type="button" id="btn-confirm-abort-yes" class="nav-btn" style="background:var(--accent-signal);color:#fff;border-color:var(--accent-signal);">YES, ABORT</button>
+          <button type="button" id="btn-confirm-abort-no" class="nav-btn">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS SCREEN ================= -->
+  <section id="screen-results" class="screen-layer center-overlay hidden">
+    <div class="dialog-box">
+      <h2 id="results-title" class="results-header">CAPTURED BY DANDO</h2>
+      <p id="results-subtitle" style="text-align:center;color:var(--ink-muted);font-size:0.8rem;"></p>
+
+      <div id="results-badges" class="res-badges-wrap"></div>
+
+      <div class="results-grid">
+        <div class="res-row"><span>FINAL SCORE</span><strong id="res-final-score" style="color:var(--accent-acid);">0</strong></div>
+        <div class="res-row"><span>SURVIVAL TIME</span><strong id="res-survival-time">00:00</strong></div>
+        <div class="res-row"><span>DISTANCE</span><strong id="res-distance">0 u</strong></div>
+        <div class="res-row"><span>PICKUPS</span><strong id="res-pickups">0</strong></div>
+        <div class="res-row"><span>OBJECTIVES</span><strong id="res-objectives">0</strong></div>
+        <div class="res-row"><span>JUKE &amp; HEAT BONUS</span><strong id="res-skill-bonus">+0 pts</strong></div>
+        <div class="res-row"><span>MULTIPLIER</span><strong id="res-multiplier">1.0x</strong></div>
+        <div class="res-row"><span>CRED EARNED</span><strong id="res-currency-earned" style="color:var(--accent-acid);">+0 CRED</strong></div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <button type="button" id="btn-results-retry" class="play-cta-btn" style="flex:1;">DEPLOY AGAIN ▶</button>
+        <button type="button" id="btn-results-replay-seed" class="nav-btn" style="padding:12px 14px;" title="Replay this exact arena seed">REPLAY SEED ↺</button>
+        <button type="button" id="btn-results-shop" class="nav-btn" style="padding:12px 14px;">ARMORY</button>
+        <button type="button" id="btn-results-menu" class="nav-btn" style="padding:12px 14px;">MAIN DECK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODAL: ARMORY & COSMETICS SHOP ================= -->
+  <div id="modal-shop" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-shop-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-shop-title">ARMORY // ARCHETYPES, RIGS &amp; PERKS</h2>
+          <p style="font-size:0.72rem;color:var(--ink-muted);">All unlocks persist locally in browser Cookies &amp; LocalStorage.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="currency-pill">CRED // <span id="shop-balance-val">0</span></span>
+          <button type="button" class="nav-btn" data-close-modal>CLOSE [X]</button>
+        </div>
+      </div>
+      <div id="shop-items-grid" class="shop-grid"></div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: STATISTICS & ACHIEVEMENTS ================= -->
+  <div id="modal-stats" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-stats-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-stats-title">CAREER TELEMETRY &amp; HONORS</h2>
+        <button type="button" class="nav-btn" data-close-modal>CLOSE [X]</button>
+      </div>
+      <div class="section-heading">LIFETIME RECORD</div>
+      <div id="stats-summary-grid" class="stats-grid"></div>
+      <div class="section-heading" style="margin-top:6px;">SERVICE HONORS</div>
+      <div id="achievements-list-grid" class="ach-grid"></div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SETTINGS & ACCESSIBILITY ================= -->
+  <div id="modal-settings" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-settings-title">SYSTEM CONFIGURATION</h2>
+        <button type="button" class="nav-btn" data-close-modal>CLOSE [X]</button>
+      </div>
+
+      <div class="section-heading">AUDIO SYNTHESIS MIXER</div>
+      <div class="settings-group">
+        <label class="setting-row">
+          <span>MASTER GAIN (<span id="slider-master-vol-val">80%</span>)</span>
+          <input type="range" id="slider-master-vol" min="0" max="100" value="80" />
+        </label>
+        <label class="setting-row">
+          <span>PULSE MUSIC GAIN (<span id="slider-music-vol-val">55%</span>)</span>
+          <input type="range" id="slider-music-vol" min="0" max="100" value="55" />
+        </label>
+        <label class="setting-row">
+          <span>SFX GAIN (<span id="slider-sfx-vol-val">85%</span>)</span>
+          <input type="range" id="slider-sfx-vol" min="0" max="100" value="85" />
+        </label>
+      </div>
+
+      <div class="section-heading">ACCESSIBILITY &amp; READABILITY</div>
+      <div class="settings-group">
+        <label class="setting-row">
+          <span>UI TEXT &amp; PANEL SCALE (<span id="slider-ui-scale-val">100%</span>)</span>
+          <input type="range" id="slider-ui-scale" min="85" max="115" step="5" value="100" />
+        </label>
+        <label class="setting-row">
+          <span>REDUCED MOTION (Disables camera shake, hit-stop, strobes &amp; heavy particles)</span>
+          <input type="checkbox" id="toggle-reduced-motion" />
+        </label>
+        <label class="setting-row">
+          <span>HIGH-CONTRAST MODE (Stark monochrome borders on all geometry)</span>
+          <input type="checkbox" id="toggle-high-contrast" />
+        </label>
+        <label class="setting-row">
+          <span>COLORBLIND TELEMETRY LABELS (Symbolic gate, hazard &amp; role tags)</span>
+          <input type="checkbox" id="toggle-colorblind" />
+        </label>
+        <label class="setting-row">
+          <span>SHOW HUD MINIMAP</span>
+          <input type="checkbox" id="toggle-minimap" checked />
+        </label>
+      </div>
+
+      <div class="section-heading">KEYBIND REMAPPING (ESC TO CANCEL · AUTO-SWAPS CONFLICTS)</div>
+      <div id="keybinds-remap-list" class="kb-grid"></div>
+
+      <div class="section-heading" style="color:var(--accent-signal);">STORAGE MANAGEMENT (COOKIES + LOCALSTORAGE)</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button type="button" id="btn-reset-save" class="nav-btn" style="border-color:var(--accent-signal);color:var(--accent-signal);">WIPE SAVED PROFILE</button>
+        <div id="reset-confirm-box" class="hidden" style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:0.75rem;color:var(--accent-acid);">CONFIRM WIPE?</span>
+          <button type="button" id="btn-confirm-reset-yes" class="nav-btn" style="background:var(--accent-signal);color:#fff;">YES, WIPE</button>
+          <button type="button" id="btn-confirm-reset-no" class="nav-btn">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: BRIEFING / HOW TO PLAY ================= -->
+  <div id="modal-tutorial" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-tutorial-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-tutorial-title">TACTICAL BRIEFING // RUN FROM DANDO</h2>
+        <button type="button" class="nav-btn" data-close-modal>ACKNOWLEDGE [X]</button>
+      </div>
+      <div class="cards-grid-2">
+        <div class="shop-card">
+          <strong>01 // MOVEMENT &amp; EVASION</strong>
+          <p>• <strong>Move:</strong> WASD / Arrow Keys or Left Touch Stick.<br/>
+             • <strong>Dodge <span id="tut-key-dodge">[SPACE]</span>:</strong> Directional dash with i-frames. Dando leads his lunges ahead of your movement—dodge across his cone for a <em>Lunge Juke (+140)</em> or dodge approaching vehicles for a <em>Hazard Juke (+75)</em>.<br/>
+             • <strong>Sprint <span id="tut-key-sprint">[L-SHIFT]</span>:</strong> Speed burst (requires ≥15% Stamina; on mobile, tap SPRINT to toggle or push stick fully).<br/>
+             • <strong>Skill <span id="tut-key-ability">[E]</span>:</strong> Triggers your Archetype's tactical ability.</p>
+        </div>
+        <div class="shop-card">
+          <strong>02 // DANDO AI &amp; ANTI-CAMP SONAR</strong>
+          <p>• <strong>Dando</strong> navigates via 60×45 grid A* and escalates across 5 <strong>Heat Waves</strong> (every 16s).<br/>
+             • Break line-of-sight behind blocks or inside <strong>Smoke Vents</strong> to force Dando into quadrant search (note: Dando senses and grabs you if you stand right next to him inside smoke!).<br/>
+             • After the opening 6s grace window, camping motionless for 4.5s triggers Dando's <strong>Sonar Ping</strong>!</p>
+        </div>
+        <div class="shop-card">
+          <strong>03 // POWER-UPS &amp; FIELD AGENTS</strong>
+          <p>• <strong>⚡ Caffeine Shot:</strong> +35% speed (5s).<br/>
+             • <strong>🛡 Riot Shield:</strong> Absorbs 1 hit (8s).<br/>
+             • <strong>❄ EMP Slowdown:</strong> Slows Dando &amp; traffic by 60% (3.5s).<br/>
+             • <strong>🎭 Holo Decoy:</strong> Lures Dando away.<br/>
+             • <strong>✚ Medkit:</strong> Restores +1 HP (+100 Overheal Bonus at full HP).<br/>
+             • Lure Dando near <strong>◎ Press</strong> for camera distractions; grab drops from <strong>★ Insiders</strong>; evade <strong>✖ Checkers</strong>.</p>
+        </div>
+        <div class="shop-card">
+          <strong>04 // OPERATION MODES &amp; SEEDS</strong>
+          <p>• <strong>Deterministic Seeds:</strong> Lock a seed with <strong>🔒 LOCKED</strong> to replay the exact same layout, NPC spawns, and AI decisions.<br/>
+             • <strong>Time Attack:</strong> Collect Score Stars (+250) and juke lunges to hit the target score before time expires.<br/>
+             • <strong>Escape Mission:</strong> Stand inside 3 open-plaza Terminals to hack them (100%), then reach the North Helipad Exit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CREDITS & BUILD INFO ================= -->
+  <div id="modal-credits" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-credits-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-credits-title">BUILD TELEMETRY // DEVELOPER ALPHA BUILD 1</h2>
+        <button type="button" class="nav-btn" data-close-modal>CLOSE [X]</button>
+      </div>
+      <p style="font-size:0.8rem;line-height:1.6;color:var(--ink-light);">
+        <strong>RUN FROM DANDO — DEVELOPER ALPHA BUILD 1</strong><br/>
+        Portal: <a href="https://dando.in" target="_blank" rel="noopener noreferrer" class="dando-domain-link">https://dando.in</a><br/><br/>
+        • <strong>Architecture:</strong> Modular ES6 architecture (17 source files) compiled into a zero-dependency standalone HTML5 bundle with Neo-Brutalist CSS3, normalized-zoom 2.5D Top-Down Canvas Renderer, deterministic Seeded PRNG Engine, and Web Audio API Synthesizer.<br/>
+        • <strong>Persistence:</strong> Dual local save engine syncing across Browser Cookies (<code>document.cookie</code>) and <code>localStorage</code>.<br/>
+        • <strong>Developer Console:</strong> Type <code>/iamacheater</code> on your keyboard or in the browser DevTools console to unlock sandbox debug cheats (<code>[1]</code>–<code>[9]</code>, <code>[0]</code>). Cheated runs do not record leaderboard scores or honors.
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast & Cheat Console Bars -->
+  <div id="ui-toast" class="toast-banner hidden" role="status" aria-live="polite"></div>
+  <div id="cheat-console-bar" class="cheat-bar hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
